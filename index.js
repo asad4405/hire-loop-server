@@ -24,6 +24,7 @@ export async function connectToMongoDB() {
 const connectedClient = await connectToMongoDB();
 const db = connectedClient.db('hire-loop');
 const usersCollection = db.collection('user');
+const jobsCollection = db.collection('jobs');
 
 app.get("/", (req, res) => {
     res.send("Server Running...");
@@ -36,6 +37,19 @@ app.get("/users", async (req, res) => {
         console.dir(err);
         res.status(500).json({ error: "Failed to fetch users" });
     }
+});
+
+// job api
+app.get("/jobs", async(req, res) => {
+    const jobs = jobsCollection.find();
+    const result = await jobs.toArray();
+    res.send(result);
+});
+
+app.post("/jobs", async(req, res) => {
+    const job = req.body;
+    const result= await jobsCollection.insertOne(job);
+    res.send(result);
 });
 
 
