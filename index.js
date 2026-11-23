@@ -40,21 +40,52 @@ app.get("/users", async (req, res) => {
 });
 
 // job api
-app.get("/jobs", async(req, res) => {
-    const jobs = jobsCollection.find();
-    const result = await jobs.toArray();
+app.get("/jobs", async (req, res) => {
+    const query = {};
+
+    if (req.query.search) {
+        query.$or = [
+            { title: { $regex: req.query.search, $options: "i" } },
+            { company: { $regex: req.query.search, $options: "i" } },
+            { location: { $regex: req.query.search, $options: "i" } },
+        ];
+    }
+
+    if (req.query.title) {
+        query.title = { $regex: req.query.title, $options: "i" };
+    }
+    if (req.query.company) {
+        query.company = { $regex: req.query.company, $options: "i" };
+    }
+    if (req.query.location) {
+        query.location = { $regex: req.query.location, $options: "i" };
+    }
+    if (req.query.jobType) {
+        query.jobType = { $regex: `^${req.query.jobType}$`, $options: "i" };
+    }
+    if (req.query.category) {
+        query.category = { $regex: `^${req.query.category}$`, $options: "i" };
+    }
+    if (req.query.frequency) {
+        query.frequency = { $regex: `^${req.query.frequency}$`, $options: "i" };
+    }
+    if (req.query.isRemote !== undefined && req.query.isRemote !== "") {
+        query.isRemote = req.query.isRemote === "true";
+    }
+
+    const result = await jobsCollection.find(query).toArray();
     res.send(result);
 });
 
-app.post("/jobs", async(req, res) => {
+app.post("/jobs", async (req, res) => {
     const job = req.body;
-    const result= await jobsCollection.insertOne(job);
+    const result = await jobsCollection.insertOne(job);
     res.send(result);
 });
 
-app.delete("/jobs/:id", async(req, res) => {
+app.delete("/jobs/:id", async (req, res) => {
     const id = req.params.id;
-    const query = {_id: new ObjectId(id)};
+    const query = { _id: new ObjectId(id) };
     const result = await jobsCollection.deleteOne(query);
     res.send(result);
 });
