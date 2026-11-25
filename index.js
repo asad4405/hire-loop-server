@@ -77,6 +77,19 @@ app.get("/jobs", async (req, res) => {
     res.send(result);
 });
 
+
+app.get("/jobs/:id", async (req, res) => {
+    const { id } = req.params;
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).send({ message: "Invalid job ID" });
+    }
+    const job = await jobsCollection.findOne({ _id: new ObjectId(id) });
+    if (!job) {
+        return res.status(404).send({ message: "Job not found" });
+    }
+    res.send(job);
+});
+
 app.post("/jobs", async (req, res) => {
     const job = req.body;
     const result = await jobsCollection.insertOne(job);
@@ -89,6 +102,7 @@ app.delete("/jobs/:id", async (req, res) => {
     const result = await jobsCollection.deleteOne(query);
     res.send(result);
 });
+
 
 
 app.listen(PORT, () => {
